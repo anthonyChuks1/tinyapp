@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8080; //default port 8080
+const PORT = 8081; //default port 8080
 
 app.set("view engine", "ejs"); //set ejs as view engine.
 
@@ -24,10 +24,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);//Log the POST request body to the console
-  res.send("Ok"); //Respond with 'Ok' (we will replace this)
+  //console.log(req.body);//Log the POST request body to the console
+  const urlLong = req.body.longURL;
+  const urlShort = generateRandomString();
+  urlDatabase[urlShort] = urlLong; //Add them to the data base 
+  //console.log(urlDatabase);
+  
+  
+  //res.send("Ok"); //Respond with 'Ok' 
+  res.redirect(`/urls/${urlShort}`);//Lets make sure that it actually worked hmm?
 })
 
+app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in
+  const {id} = req.params;
+  const longURL = urlDatabase[id];
+  res.redirect(`${longURL}`);
+});
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
@@ -47,7 +59,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b><body></html>\n");
 });
-
+//------------------------------------------------
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
