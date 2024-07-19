@@ -8,8 +8,14 @@ const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
-app.get("/urls", (req, res) =>{//route for /urls
-  const templateVars = {urls: urlDatabase};
+
+app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
+//                     into string we can read and add it to the req(request) object under key body.
+
+
+
+app.get("/urls", (req, res) => {//route for /urls
+  const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -17,8 +23,14 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+app.post("/urls", (req, res) => {
+  console.log(req.body);//Log the POST request body to the console
+  res.send("Ok"); //Respond with 'Ok' (we will replace this)
+})
+
+
 app.get("/urls/:id", (req, res) => {
-  const templateVars = {id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
 
@@ -40,3 +52,9 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+const generateRandomString = function () {
+  return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
+  //                                                    from index 4 to 10
+}
+//console.log(generateRandomString());
