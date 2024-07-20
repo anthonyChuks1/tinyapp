@@ -89,9 +89,11 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  * @param {Object} res - The response object.
  */
 app.post("/urls/:id", (req, res) => {//handles Edit of the long url
-  const {id} = req.params;
-  const {longURL} = req.body;//to get the data from the form it will put the data in the body
-  urlDatabase[id] = longURL;
+  const { id } = req.params;
+  const { longURL } = req.body;//to get the data from the form it will put the data in the body
+  if (longURL !== 'http://') {
+    urlDatabase[id] = longURL;
+  }
   res.redirect("/urls");
 });
 
