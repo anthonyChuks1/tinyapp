@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8080; //default port 8080
+const PORT = 8081; //default port 8080
 
 app.set("view engine", "ejs"); //set ejs as view engine.
 
@@ -24,19 +24,24 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  //console.log(req.body);//Log the POST request body to the console
   const urlLong = req.body.longURL;
   const urlShort = generateRandomString();
   urlDatabase[urlShort] = urlLong; //Add them to the data base 
-  //console.log(urlDatabase);
-  
-  
-  //res.send("Ok"); //Respond with 'Ok' 
   res.redirect(`/urls/${urlShort}`);//Lets make sure that it actually worked hmm?
 })
 
+app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a delete button form
+  const urlShort = req.params.id;
+  delete urlDatabase[urlShort];
+
+  
+  res.redirect("/urls");//redirect to homepage
+})
+
+
+
 app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in
-  const {id} = req.params;
+  const { id } = req.params;
   const longURL = urlDatabase[id];
   res.redirect(`${longURL}`);
 });
@@ -69,4 +74,3 @@ const generateRandomString = function () {
   return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 4 to 10
 }
-//console.log(generateRandomString());
