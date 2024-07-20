@@ -32,6 +32,18 @@
         background-color: lightcoral;
         color: white;
       }
+      .editButton{
+        border-color: bisque;
+        cursor: pointer;
+        color: black;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 10px;
+      }
+      .editButton:hover{
+        background-color: lightskyblue;
+        color: white;
+      }
     </style>
 
     <main style="margin: 1em;">
@@ -41,6 +53,7 @@
           <tr>
             <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Edit</th>
             <th scope="col">Delete</th>
           </tr>
         </thead>
@@ -52,6 +65,9 @@
               </td>
               <td><a class = "nav-item nav-link disabled" href = "<%= urls[id] %>">
                 <%= urls[id] %></a>
+              </td>
+              <td>
+                <form method = "GET" action = "/urls/<%= id %>"><button class = "editButton">Edit</button></form>
               </td>
               <td>
                 <form method = "POST" action = "/urls/<%= id %>/delete"><button class = "deleteButton">Delete</button></form>
