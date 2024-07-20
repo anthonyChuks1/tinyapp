@@ -18,7 +18,22 @@
   </head>
   <body>
     <%- include('partials/_header') %>
-    
+
+    <style>
+      .deleteButton{
+        border-color: red;
+        cursor: pointer;
+        color: black;
+        padding: 10px;
+        border-radius: 10px;
+        font-size: 10px;       
+      }
+      .deleteButton:hover{
+        background-color: lightcoral;
+        color: white;
+      }
+    </style>
+
     <main style="margin: 1em;">
       <h3>My URLs</h3>
       <table class="table">
@@ -26,6 +41,7 @@
           <tr>
             <th scope="col">Short URL ID</th>
             <th scope="col">Long URL</th>
+            <th scope="col">Delete</th>
           </tr>
         </thead>
         <tbody>
@@ -37,10 +53,15 @@
               <td><a class = "nav-item nav-link disabled" href = "<%= urls[id] %>">
                 <%= urls[id] %></a>
               </td>
+              <td>
+                <form method = "POST" action = "/urls/<%= id %>/delete"><button class = "deleteButton">Delete</button></form>
+                
+              </td>
             </tr>
           <% } %>
         </tbody>
       </table>
+      
     </main>
     <!-- Bootstrap JS -->
     <script
