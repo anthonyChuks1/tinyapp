@@ -70,6 +70,23 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
   res.redirect("/urls");//redirect to homepage
 });
 
+
+  /**
+   * POST /login
+   * Retrieves the username from the request body
+   * and saves it in a cookie.
+   *
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response objeect.
+   * @returns {string} The username extracted from the request body.
+   */
+  app.post("/login", (req,res) => {
+  const {username} = req.body;
+  //console.log(username);
+  res.cookie('username', username);  
+  res.redirect(`/urls`)
+})
+
 /**
  * GET /u/:id
  * Route for redirecting to the long URL when the short URL is passed in.
