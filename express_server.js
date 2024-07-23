@@ -9,20 +9,14 @@ const PORT = 8081; //default port 8080
 
 app.set("view engine", "ejs"); //set ejs as view engine.
 
-/**
- * @typedef {Object} UrlDatabase
- * @property {string} b2xVn2 - The short URL key.
- * @property {string} 9sm5xK - The short URL key.
- */
 
-/** @type {UrlDatabase} */
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
 app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
-//                     into string we can read and add it to the req(request) object under key body.
+//                     into string we can read and add it to the req(request) object under key body. very important
 
 /**
  * GET /urls
