@@ -92,6 +92,10 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
   res.redirect(`/urls`)
 })
 
+app.post("/logout", (req,res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
 /**
  * GET /u/:id
  * Route for redirecting to the long URL when the short URL is passed in.
