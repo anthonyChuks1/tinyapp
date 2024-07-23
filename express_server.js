@@ -20,8 +20,6 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
-app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
-//                     into string we can read and add it to the req(request) object under key body. very important
 
 /**
  * GET /urls
