@@ -11,13 +11,16 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-
-      <form action="/login" method="POST">
-        <div class="form-group mb-2 ">
-          <input name="username" type="text" placeholder="Username" style="width: 300px; margin: 1em" />
-          <label><button class="btn btn-outline-dark">Login</button></label>          
-        </div>
-      </form>
+      <% if(username) { %>
+        <%= username %>
+          <% }else{ %>
+            <form action="/login" method="POST">
+              <div class="form-group mb-2 ">
+                <input name="username" type="text" placeholder="Username" style="width: 300px; margin: 1em" />
+                <label><button class="btn btn-outline-dark">Login</button></label>
+              </div>
+            </form>
+            <% } %>
 
     </div>
   </nav>
