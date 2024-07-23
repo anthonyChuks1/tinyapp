@@ -12,15 +12,23 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <% if(username) { %>
-        <%= username %>
-          <% }else{ %>
-            <form action="/login" method="POST">
-              <div class="form-group mb-2 ">
-                <input name="username" type="text" placeholder="Username" style="width: 300px; margin: 1em" />
-                <label><button class="btn btn-outline-dark">Login</button></label>
-              </div>
-            </form>
-            <% } %>
+        <div>
+          <form action="/logout" method="POST">
+          <b>
+            Logged in as: 
+            <%= username %>
+          </b>
+          <button class="btn btn-outline-warning ml-5">Logout</button>
+          </form>
+        </div>
+        <% }else{ %>
+          <form action="/login" method="POST">
+            <div class="form-group mb-2 ">
+              <input name="username" type="text" placeholder="Username" style="width: 300px; margin: 1em" />
+              <label><button class="btn btn-outline-dark">Login</button></label>
+            </div>
+          </form>
+          <% } %>
 
     </div>
   </nav>
