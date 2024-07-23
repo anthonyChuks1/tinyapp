@@ -88,6 +88,14 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
   res.redirect(`/urls`)
 })
 
+
+/**
+   * POST /logout
+   * Deletes the username from the cookie cache
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response objeect.
+   * 
+   */
 app.post("/logout", (req,res) => {
   res.clearCookie("username");
   res.redirect("/urls");
@@ -130,6 +138,17 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
+
+/**
+ * GET /register
+ * Route for the registration page.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ */
+app.get("/register", (req,res) => {
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  res.render("register.ejs", templateVars)
+})
 
 //---------------------------------------
 app.get("/", (req, res) => {
