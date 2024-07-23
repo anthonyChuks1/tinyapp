@@ -4,10 +4,15 @@
  */
 
 const express = require('express');
+const cookieParser = require('cookie-parser')
+
 const app = express();
 const PORT = 8081; //default port 8080
 
 app.set("view engine", "ejs"); //set ejs as view engine.
+app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
+//                     into string we can read and add it to the req(request) object under key body.
+app.use(cookieParser());
 
 
 const urlDatabase = {
@@ -25,7 +30,7 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
  * @param {Object} res - The response object.
  */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 
@@ -36,7 +41,9 @@ app.get("/urls", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  res.render("urls_new", templateVars);
+  
 });
 
 /**
@@ -64,6 +71,27 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
   res.redirect("/urls");//redirect to homepage
 });
 
+
+  /**
+   * POST /login
+   * Retrieves the username from the request body
+   * and saves it in a cookie.
+   *
+   * @param {Object} req - The request object.
+   * @param {Object} res - The response objeect.
+   * @returns {string} The username extracted from the request body.
+   */
+  app.post("/login", (req,res) => {
+  const {username} = req.body;
+  //console.log(username);
+  res.cookie('username', username);  
+  res.redirect(`/urls`)
+})
+
+app.post("/logout", (req,res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+})
 /**
  * GET /u/:id
  * Route for redirecting to the long URL when the short URL is passed in.
@@ -84,6 +112,7 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  */
 app.post("/urls/:id", (req, res) => {//handles Edit of the long url
   const { id } = req.params;
+  
   const { longURL } = req.body;//to get the data from the form it will put the data in the body
   if (longURL !== 'http://') {
     urlDatabase[id] = longURL;
@@ -98,7 +127,7 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
  * @param {Object} res - The response object.
  */
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
