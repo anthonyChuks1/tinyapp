@@ -15,13 +15,30 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
 app.use(cookieParser());
 
 
+/**Global variables */
+//urlDatabase database
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
-
+//users database
+const users = {
+  b2: {
+    id: "b2",
+    email: "b@b.com",
+    password: "bbbbbbb",
+  },
+  a1: {
+    id: "a1",
+    email: "a@a.com",
+    password: "aaaaaaa",
+  },
+};
+/**End of global variables */
 app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
 //                     into string we can read and add it to the req(request) object under key body. very important
+
+
 
 /**
  * GET /urls
@@ -30,7 +47,7 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
  * @param {Object} res - The response object.
  */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 
@@ -41,9 +58,9 @@ app.get("/urls", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_new", templateVars);
-  
+
 });
 
 /**
@@ -72,19 +89,19 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 });
 
 
-  /**
-   * POST /login
-   * Retrieves the username from the request body
-   * and saves it in a cookie.
-   *
-   * @param {Object} req - The request object.
-   * @param {Object} res - The response objeect.
-   * @returns {string} The username extracted from the request body.
-   */
-  app.post("/login", (req,res) => {
-  const {username} = req.body;
+/**
+ * POST /login
+ * Retrieves the username from the request body
+ * and saves it in a cookie.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response objeect.
+ * @returns {string} The username extracted from the request body.
+ */
+app.post("/login", (req, res) => {
+  const { username } = req.body;
   //console.log(username);
-  res.cookie('username', username);  
+  res.cookie('username', username);
   res.redirect(`/urls`)
 })
 
@@ -96,7 +113,7 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
    * @param {Object} res - The response objeect.
    * 
    */
-app.post("/logout", (req,res) => {
+app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
 })
@@ -120,7 +137,7 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  */
 app.post("/urls/:id", (req, res) => {//handles Edit of the long url
   const { id } = req.params;
-  
+
   const { longURL } = req.body;//to get the data from the form it will put the data in the body
   if (longURL !== 'http://') {
     urlDatabase[id] = longURL;
@@ -140,15 +157,39 @@ app.get("/urls/:id", (req, res) => {
 });
 
 /**
+ * POST /register
+ * Route for handling the registration data.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ */
+app.post("/register", (req, res) => {
+
+  const {email, password} =  req.body;
+
+  
+  const user = {
+    id: generateRandomID(),
+    email: {email},
+    password: {password},
+  }
+  users[user.id] = user;
+  console.log(users);
+  res.cookie("user_id", users[user.id]);
+  res.redirect("/urls");
+});
+
+
+/**
  * GET /register
  * Route for the registration page.
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.get("/register", (req,res) => {
+app.get("/register", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
   res.render("register.ejs", templateVars)
 })
+
 
 //---------------------------------------
 app.get("/", (req, res) => {
@@ -179,4 +220,12 @@ app.listen(PORT, () => {
 const generateRandomString = function () {
   return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 4 to 10
+};
+/**
+ * Generate a random string.
+ * @returns {string} - The generated random string.
+ */
+const generateRandomID = function () {
+  return Math.random().toString(36).substring(3, 7);//return random number between 0 - 1 and convert from decimal to base 36 then get value
+  //                                                    from index 3 to 7
 };
