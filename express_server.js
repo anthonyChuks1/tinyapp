@@ -89,6 +89,7 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 });
 
 
+
 /**
  * POST /login
  * Retrieves the username from the request body
@@ -99,11 +100,11 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
  * @returns {string} The username extracted from the request body.
  */
 app.post("/login", (req, res) => {
-  const {userEmail} = req.body;
+  const {email, password} = req.body;
   //console.log(username);
 
   for(let u in users){//loop through database to find the email
-    if(userEmail === users[u].email){//did you find the email
+    if(email === users[u].email && password === users[u].password ){//did you find the email
       res.cookie('user_id', users[u]);//then add it to the cookie as user_id
       break;
     }
@@ -111,6 +112,14 @@ app.post("/login", (req, res) => {
   //console.log(req.cookies["user_id"]);
   res.redirect(`/urls`)//if the name was not found then just redirect to the home page.
 })
+
+/**
+ *  a GET endpoint for /login
+ */
+app.get("/login", (req, res) => {
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
+  res.render("login", templateVars);
+});
 
 
 /**
@@ -174,12 +183,12 @@ app.post("/register", (req, res) => {
   const {email, password} =  req.body;
 /**Error check start */
   if(!email || !password){
-    console.log("Nothing in the email ");
-    res.sendStatus(400);//Respond with status 400 if the email and password is empty
+    
+    res.sendStatus(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
     return;
   }
   if(getUserByEmail(email)){
-      res.sendStatus(400);//respond with status 400 if email is already used
+      res.sendStatus(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
       return;
   }
   /**Error check End */
@@ -257,5 +266,5 @@ const getUserByEmail = function(email) {
       return(users[u]);
     }
   }
-  return undefined;
+  return null;
 }
