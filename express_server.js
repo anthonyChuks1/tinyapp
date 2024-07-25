@@ -172,8 +172,17 @@ app.get("/urls/:id", (req, res) => {
 app.post("/register", (req, res) => {
 
   const {email, password} =  req.body;
-
-  
+/**Error check start */
+  if(!email || !password){
+    console.log("Nothing in the email ");
+    res.sendStatus(400);//Respond with status 400 if the email and password is empty
+    return;
+  }
+  if(getUserByEmail(email)){
+      res.sendStatus(400);//respond with status 400 if email is already used
+      return;
+  }
+  /**Error check End */
   const user = {
     id: generateRandomID(),
     email,
@@ -236,3 +245,17 @@ const generateRandomID = function () {
   return Math.random().toString(36).substring(3, 7);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 3 to 7
 };
+
+/**
+ * Returns an object that has the email
+ * @param {string} email -  a string with the email format
+ * @returns {object} - the user object
+ */
+const getUserByEmail = function(email) {
+  for(let u in users){
+    if(email === users[u].email){
+      return(users[u]);
+    }
+  }
+  return undefined;
+}
