@@ -32,7 +32,7 @@
         <tbody>
           <% for (let id in urls) { %>
             <tr>
-              <td><a class= "nav-item nav-link active" href = "/urls/<%= id %>/" > 
+              <td><a class= "nav-item nav-link active" href = "<%= urls[id] %>" target = "_blank"> 
                 <%= id %> </a>
               </td>
               <td><a class = "nav-item nav-link disabled" href = "<%= urls[id] %>">
