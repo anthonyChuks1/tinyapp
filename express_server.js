@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 8081; //default port 8080
@@ -72,7 +72,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   const urlLong = req.body.longURL;//it will put new data in the body
   const urlShort = generateRandomString();
-  urlDatabase[urlShort] = urlLong; //Add them to the data base 
+  urlDatabase[urlShort] = urlLong; //Add them to the data base
   res.redirect(`/urls/${urlShort}`);//Lets make sure that it actually worked hmm?
 });
 
@@ -92,29 +92,30 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 
 /**
  * POST /login
- * Retrieves the username from the request body
+ * Retrieves the login information from the request body
  * and saves it in a cookie.
  *
  * @param {Object} req - The request object.
  * @param {Object} res - The response objeect.
- * @returns {string} The username extracted from the request body.
  */
 app.post("/login", (req, res) => {
-  const {email, password} = req.body;
-  //console.log(username);
-
-  for(let u in users){//loop through database to find the email
-    if(email === users[u].email && password === users[u].password ){//did you find the email
+  const { email, password } = req.body;
+  for (let u in users) {//loop through database to find the email
+    if (email === users[u].email && password === users[u].password) {//did you find the email
       res.cookie('user_id', users[u]);//then add it to the cookie as user_id
-      break;
+      res.redirect(`/urls`);
     }
   }
-  //console.log(req.cookies["user_id"]);
-  res.redirect(`/urls`)//if the name was not found then just redirect to the home page.
-})
+  if (!req.cookies['user_id']) {
+    res.status(403).send("<h1>Login Failed - Wrong Login information</h1>");
+  }
+  //res.redirect(`/login`);//if the name was not found then just redirect to the home page.
+});
 
 /**
- *  a GET endpoint for /login
+ *  a GET endpoint for /login page
+ * @param {object} req
+ * @param {object} res
  */
 app.get("/login", (req, res) => {
   const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
@@ -124,15 +125,15 @@ app.get("/login", (req, res) => {
 
 /**
    * POST /logout
-   * Deletes the username from the cookie cache
+   * Deletes the user information from the cookie cache
    * @param {Object} req - The request object.
    * @param {Object} res - The response objeect.
-   * 
+   *
    */
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");//clear the cookies when logged out
-  res.redirect("/urls");
-})
+  res.redirect(`/login`);
+});
 /**
  * GET /u/:id
  * Route for redirecting to the long URL when the short URL is passed in.
@@ -158,7 +159,7 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
   if (longURL !== 'http://') {
     urlDatabase[id] = longURL;
   }
-  res.redirect("/urls");
+  res.redirect(`/urls`);
 });
 
 /**
@@ -167,9 +168,9 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.get("/urls/:id", (req, res) => {
+app.get(`/urls/:id`, (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
-  res.render("urls_show", templateVars);
+  res.render(`urls_show`, templateVars);
 });
 
 /**
@@ -180,23 +181,23 @@ app.get("/urls/:id", (req, res) => {
  */
 app.post("/register", (req, res) => {
 
-  const {email, password} =  req.body;
-/**Error check start */
-  if(!email || !password){
-    
-    res.sendStatus(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+
+    res.status(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
     return;
   }
-  if(getUserByEmail(email)){
-      res.sendStatus(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
-      return;
+  if (getUserByEmail(email)) {
+    res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
+    return;
   }
-  /**Error check End */
+
   const user = {
     id: generateRandomID(),
     email,
     password,
-  }
+  };
   users[user.id] = user;
   console.log(users);
   res.cookie("user_id", users[user.id]);
@@ -212,8 +213,8 @@ app.post("/register", (req, res) => {
  */
 app.get("/register", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
-  res.render("register.ejs", templateVars)
-})
+  res.render("register.ejs", templateVars);
+});
 
 
 //---------------------------------------
@@ -242,7 +243,7 @@ app.listen(PORT, () => {
  * Generate a random string.
  * @returns {string} - The generated random string.
  */
-const generateRandomString = function () {
+const generateRandomString = function() {
   return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 4 to 10
 };
@@ -250,7 +251,7 @@ const generateRandomString = function () {
  * Generate a random string.
  * @returns {string} - The generated random string.
  */
-const generateRandomID = function () {
+const generateRandomID = function() {
   return Math.random().toString(36).substring(3, 7);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 3 to 7
 };
@@ -261,10 +262,10 @@ const generateRandomID = function () {
  * @returns {object} - the user object
  */
 const getUserByEmail = function(email) {
-  for(let u in users){
-    if(email === users[u].email){
-      return(users[u]);
+  for (let u in users) {
+    if (email === users[u].email) {
+      return (users[u]);
     }
   }
   return null;
-}
+};
