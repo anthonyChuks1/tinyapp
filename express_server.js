@@ -47,7 +47,7 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
  * @param {Object} res - The response object.
  */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
   res.render("urls_index", templateVars);
 });
 
@@ -58,7 +58,7 @@ app.get("/urls", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
   res.render("urls_new", templateVars);
 
 });
@@ -99,10 +99,17 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
  * @returns {string} The username extracted from the request body.
  */
 app.post("/login", (req, res) => {
-  const { username } = req.body;
+  const {userEmail} = req.body;
   //console.log(username);
-  res.cookie('username', username);
-  res.redirect(`/urls`)
+
+  for(let u in users){//loop through database to find the email
+    if(userEmail === users[u].email){//did you find the email
+      res.cookie('user_id', users[u]);//then add it to the cookie as user_id
+      break;
+    }
+  }
+  //console.log(req.cookies["user_id"]);
+  res.redirect(`/urls`)//if the name was not found then just redirect to the home page.
 })
 
 
@@ -114,7 +121,7 @@ app.post("/login", (req, res) => {
    * 
    */
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");//clear the cookies when logged out
   res.redirect("/urls");
 })
 /**
@@ -152,7 +159,7 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
  * @param {Object} res - The response object.
  */
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
   res.render("urls_show", templateVars);
 });
 
@@ -169,8 +176,8 @@ app.post("/register", (req, res) => {
   
   const user = {
     id: generateRandomID(),
-    email: {email},
-    password: {password},
+    email,
+    password,
   }
   users[user.id] = user;
   console.log(users);
@@ -186,7 +193,7 @@ app.post("/register", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/register", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
   res.render("register.ejs", templateVars)
 })
 
