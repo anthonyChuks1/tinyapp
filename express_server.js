@@ -5,6 +5,13 @@
 
 const bcrypt = require("bcryptjs");
 const express = require('express');
+const { 
+  generateRandomString,
+  generateRandomID,
+  getUserByEmail,
+  checkLogin,
+  checkForUrlId,
+  urlsForUser, } = require('./helpers')
 //const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 
@@ -78,11 +85,11 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
 
   const cookie = req.session.user_id;
-  if (!checkLogin(cookie)) {
+  if (!checkLogin(cookie, users)) {
     //res.status(403).send(`<h3> Cannot access this page without logging in.</h3>`)
     return res.redirect(`/login`);
   }
-  const urls = urlsForUser(cookie.id)
+  const urls = urlsForUser(cookie.id, urlDatabase)
   const templateVars = { urls, user: req.session.user_id };
   res.render("urls_index", templateVars);
 });
@@ -104,10 +111,10 @@ app.get("/urls/new", (req, res) => {
 
   //const cookie = templateVars.user;
   const userCookie = req.session.user_id
-  if (!checkLogin(userCookie)) {
+  if (!checkLogin(userCookie, users)) {
     return res.redirect(`/login`);
   }
-  const templateVars = { urls: urlDatabase, user: req.session.user_id};
+  const templateVars = { urls: urlDatabase, user: req.session.user_id };
   return res.render("urls_new", templateVars);
 
 });
@@ -125,7 +132,7 @@ app.get("/urls/new", (req, res) => {
  */
 app.post("/urls", (req, res) => {
   const userCookie = req.session.user_id;
-  if (!checkLogin(userCookie)) {//Check tht the user is logged in
+  if (!checkLogin(userCookie, users)) {//Check tht the user is logged in
     return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
   }
   const { longURL } = req.body;//it will put new data in the body
@@ -148,13 +155,13 @@ app.post("/urls", (req, res) => {
  */
 app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a delete button form
   let found = false;
-  const {id}= req.params;
+  const { id } = req.params;
   const userCookie = req.session.user_id;
-  if (!checkLogin(userCookie)) {//Check tht the user is logged in
+  if (!checkLogin(userCookie, users)) {//Check tht the user is logged in
     return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
   }
 
-  const userUrls = urlsForUser(userCookie.id);//put the result into userUrls
+  const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
 
   for (let url in userUrls) {
     if (url === id) {
@@ -187,8 +194,8 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   let foundUser = null;
-  
-  
+
+
   for (let user in users) {//loop through database to find the email
     if (email === users[user].email && bcrypt.compareSync(password, users[user].password)) {//did you find the email
       foundUser = users[user];
@@ -255,7 +262,7 @@ app.post("/logout", (req, res) => {
  */
 app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in (anyone can visit this short url)
   const { id } = req.params;
-  if (!checkForUrlId(id)) {//check for the id in the database
+  if (!checkForUrlId(id, urlDatabase)) {//check for the id in the database
     return res.send(`<h3>The id does not exist in the database</h3>`)
   }
 
@@ -280,15 +287,15 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
   const userCookie = req.session.user_id
   let found = false;
 
-  if (!checkLogin(userCookie)) {//Check that the user is logged in
+  if (!checkLogin(userCookie, users)) {//Check that the user is logged in
     return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
   }
 
-  if (!checkForUrlId(id)) {//check for the id in the database
+  if (!checkForUrlId(id, urlDatabase)) {//check for the id in the database
     return res.status(403).send(`<h3>The id does not exist in the database</h3>`)
   }
 
-  const userUrls = urlsForUser(userCookie.id);//put the result into userUrls
+  const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
 
   for (let url in userUrls) {
     if (url === id) {
@@ -324,12 +331,12 @@ app.get(`/urls/:id`, (req, res) => {
   const cookie = req.session.user_id;
   let found = false;
 
-  if (!checkLogin(cookie)) {
+  if (!checkLogin(cookie, users)) {
     res.status(403).send(`<h3>Login to access this route.</h3>`)
     return res.redirect(`/login`);
   }
 
-  const urlList = urlsForUser(cookie.id);
+  const urlList = urlsForUser(cookie.id, urlDatabase);
   const id = req.params.id;
 
   for (let url in urlList) {
@@ -338,7 +345,7 @@ app.get(`/urls/:id`, (req, res) => {
       break;
     }
   }
-  if(!found){
+  if (!found) {
     return res.status(403).send("The URL does nt exist for the user.");
   }
 
@@ -370,7 +377,7 @@ app.post("/register", (req, res) => {
     res.status(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
     return;
   }
-  if (getUserByEmail(email)) {
+  if (getUserByEmail(email, users)) {
     res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
     return;
   }
@@ -378,7 +385,7 @@ app.post("/register", (req, res) => {
   const user = {
     id: generateRandomID(),
     email,
-    password : hashedPassword,
+    password: hashedPassword,
   };
 
   users[user.id] = user;
@@ -405,7 +412,7 @@ app.get("/register", (req, res) => {
 
   res.render("register.ejs", templateVars);
 });
-/**--------------------------------------------------------------------------------------------------- */
+/**---------------SERVER\\------------------------------------------------------------------------------------ */
 /**
  * Start the server.
  * @param {number} PORT - The port number to listen on.
@@ -413,92 +420,4 @@ app.get("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-/*---------------------------------------------------------------------------------------------------------------*/
-
-
-
-/**
- * Generate a random string.
- * @returns {string} - The generated random string.
- */
-const generateRandomString = function () {
-  return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
-  //                                                    from index 4 to 10
-};
-/**
- * Generate a random string.
- * @returns {string} - The generated random string.
- */
-const generateRandomID = function () {
-  return Math.random().toString(36).substring(3, 7);//return random number between 0 - 1 and convert from decimal to base 36 then get value
-  //                                                    from index 3 to 7
-};
-
-/**
- * Returns an object that has the email
- * @param {string} email -  a string with the email format
- * @returns {object} - the user object
- */
-const getUserByEmail = function (email) {
-  for (let u in users) {
-    if (email === users[u].email) {
-      return (users[u]);
-    }
-  }
-  return null;
-};
-
-
-/**
- * Takes in a cookie object and compares it to the users database to see if the password and email are the same.
- * @param {Object} cookie 
- * @returns {Boolean}
- */
-const checkLogin = function (cookie) {
-  if (!cookie) {
-    return false;
-  }
-  const cookieEmail = cookie.email;
-  const cookiePass = cookie.password;
-
-  for (let user in users) {
-    let { email, password } = users[user];
-    if (email === cookieEmail && password === cookiePass) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-
-/**
- * Return a boolean depending on whether the id of a url exists in the database
- * @param {string} urlId - a url id to search for
- * @returns {boolean}
- */
-const checkForUrlId = function (urlId) {
-  for (let url in urlDatabase) {
-    if (url === urlId) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Returns the URLs of the current user the id is the id of the current user.
- * @param {string} id - the user id connected to the url.
- * @returns {object} object of urls
- */
-const urlsForUser = function (id) {
-  const getURLs = {};
-  for (let urlId in urlDatabase) {
-    let { userID } = urlDatabase[urlId];
-    if (userID === id) {
-      getURLs[urlId] = urlDatabase[urlId];
-    }
-  }
-  return getURLs;
-}
 
