@@ -11,31 +11,33 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <% if(user) { %>
-        <div>
-          <form action="/logout" method="POST">
-            <b>
-              Logged in as:
-              <%= user.email%>
-            </b>
-            <button class="btn btn-outline-warning ml-5">Logout</button>
-          </form>
-        </div>
-        <% }else{ %>
-          <div class = "form-inline ">
+      <% if(!user) { %>
+        <div class="form-inline ">
           <form action="/login" method="GET">
             <label>
               <button class="btn btn-outline-dark">Login</button>
             </label>
           </form>
 
-          <form action="/register" method = "GET" class = "ml-3">
+          <form action="/register" method="GET" class="ml-3">
             <label>
               <button class="btn btn-outline-dark">Register</button>
             </label>
           </form>
 
+        </div>
+        
+        <% }else{ %>
+          <div>
+            <form action="/logout" method="POST">
+              <b>
+                Logged in as:
+                <%= user.email%>
+              </b>
+              <button class="btn btn-outline-warning ml-5">Logout</button>
+            </form>
           </div>
+          
           <% } %>
 
     </div>
