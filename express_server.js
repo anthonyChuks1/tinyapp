@@ -3,6 +3,7 @@
  * @description This file contains the implementation of an Express server for TinyApp, a URL shortening service.
  */
 
+const bcrypt = require("bcryptjs");
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
@@ -40,12 +41,12 @@ const users = {
   b2: {
     id: "b2",
     email: "b@b.com",
-    password: "bbb",
+    password: bcrypt.hashSync('bbb', 10),
   },
   a1: {
     id: "a1",
     email: "a@a.com",
-    password: "aaa",
+    password: bcrypt.hashSync('aaa', 10),
   },
 };
 /**End of global variables */
@@ -73,7 +74,7 @@ app.get("/urls", (req, res) => {
 
   const cookie = req.cookies['user_id'];
   if (!checkLogin(cookie)) {
-    res.status(403).send(`<h3> Cannot access this page without logging in.</h3>`)
+    //res.status(403).send(`<h3> Cannot access this page without logging in.</h3>`)
     return res.redirect(`/login`);
   }
   const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
@@ -180,8 +181,10 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   let foundUser = null;
+  
+  
   for (let user in users) {//loop through database to find the email
-    if (email === users[user].email && password === users[user].password) {//did you find the email
+    if (email === users[user].email && bcrypt.compareSync(password, users[user].password)) {//did you find the email
       foundUser = users[user];
     }
   }
@@ -346,7 +349,7 @@ app.get(`/urls/:id`, (req, res) => {
 
 /**
  * POST /register
- * Route for handling the registration data.
+ * Route for handling the registration endpoint.
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
@@ -363,16 +366,18 @@ app.post("/register", (req, res) => {
     res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
     return;
   }
-
+  const hashedPassword = bcrypt.hashSync(password, 10);//hash the password
   const user = {
     id: generateRandomID(),
     email,
-    password,
+    password : hashedPassword,
   };
+
   users[user.id] = user;
+  //res.send(users);
   //console.log(users);
   res.redirect("/");
-});
+})
 
 
 
@@ -488,3 +493,4 @@ const urlsForUser = function (id) {
   }
   return getURLs;
 }
+
