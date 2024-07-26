@@ -26,12 +26,12 @@ const users = {
   b2: {
     id: "b2",
     email: "b@b.com",
-    password: "bbbbbbb",
+    password: "bbb",
   },
   a1: {
     id: "a1",
     email: "a@a.com",
-    password: "aaaaaaa",
+    password: "aaa",
   },
 };
 /**End of global variables */
@@ -41,15 +41,36 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
 
 
 /**
+ * GET /
+ * Redirects to login page when user opens the server ip on the browser
+ */
+app.get("/", (req,res) =>{
+  res.redirect(`/login`);
+})
+
+
+/**
  * GET /urls
  * Route for displaying all URLs in the database.
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"]};
+  const cookie = templateVars.user;
+  if(!checkLogin(cookie)){
+    res.redirect(`/login`);
+    return;
+  }
   res.render("urls_index", templateVars);
 });
+
+
+
+
+
+
+
 
 /**
  * GET /urls/new
@@ -58,10 +79,21 @@ app.get("/urls", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/urls/new", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
-  res.render("urls_new", templateVars);
+  
+  //const cookie = templateVars.user;
+  const userCookie = req.cookies['user_id']
+  if(!checkLogin(userCookie)){
+    return res.redirect(`/login`);
+  }
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"]};
+  return res.render("urls_new", templateVars);
 
 });
+
+
+
+
+
 
 /**
  * POST /urls
@@ -70,11 +102,20 @@ app.get("/urls/new", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.post("/urls", (req, res) => {
+  const userCookie = req.cookies['user_id']
+  if(!checkLogin(userCookie)){//Check tht the user is logged in
+    return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');    
+  }
   const urlLong = req.body.longURL;//it will put new data in the body
   const urlShort = generateRandomString();
   urlDatabase[urlShort] = urlLong; //Add them to the data base
-  res.redirect(`/urls/${urlShort}`);//Lets make sure that it actually worked hmm?
+  return res.redirect(`/urls/${urlShort}`);//Lets make sure that it actually worked hmm?
 });
+
+
+
+
+
 
 /**
  * POST /urls/:id/delete
@@ -90,6 +131,8 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 
 
 
+
+
 /**
  * POST /login
  * Retrieves the login information from the request body
@@ -100,17 +143,29 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
  */
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
-  for (let u in users) {//loop through database to find the email
-    if (email === users[u].email && password === users[u].password) {//did you find the email
-      res.cookie('user_id', users[u]);//then add it to the cookie as user_id
-      res.redirect(`/urls`);
+  let foundUser = null;
+  for (let user in users) {//loop through database to find the email
+    if (email === users[user].email && password === users[user].password) {//did you find the email
+      foundUser = users[user];
     }
   }
-  if (!req.cookies['user_id']) {
+  if (!foundUser) {
     res.status(403).send("<h1>Login Failed - Wrong Login information</h1>");
   }
-  //res.redirect(`/login`);//if the name was not found then just redirect to the home page.
+
+  if(foundUser) {
+    //set cpoockie
+    res.cookie('user_id', foundUser)
+    return res.redirect('/urls')
+  }
+  
 });
+
+
+
+
+
+
 
 /**
  *  a GET endpoint for /login page
@@ -121,6 +176,10 @@ app.get("/login", (req, res) => {
   const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
   res.render("login", templateVars);
 });
+
+
+
+
 
 
 /**
@@ -134,17 +193,34 @@ app.post("/logout", (req, res) => {
   res.clearCookie("user_id");//clear the cookies when logged out
   res.redirect(`/login`);
 });
+
+
+
+
+
+
+
 /**
  * GET /u/:id
  * Route for redirecting to the long URL when the short URL is passed in.
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in
+app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in (anyone can visit this short url)
   const { id } = req.params;
+  if(!checkForUrlId(id)){//check for the id in the database
+    return res.send(`<h3>The id does not exist in the database</h3>`)
+  }
+
   const longURL = urlDatabase[id];
-  res.redirect(`${longURL}`);
+  return res.redirect(`${longURL}`);
 });
+
+
+
+
+
+
 
 /**
  * POST /urls/:id
@@ -162,6 +238,11 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
   res.redirect(`/urls`);
 });
 
+
+
+
+
+
 /**
  * GET /urls/:id
  * Route for displaying a specific URL.
@@ -169,9 +250,21 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
  * @param {Object} res - The response object.
  */
 app.get(`/urls/:id`, (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"]};
+  const cookie = templateVars.user;
+  if(!checkLogin(cookie)){
+    res.redirect(`/login`);
+    return;
+  }
+  
   res.render(`urls_show`, templateVars);
 });
+
+
+
+
+
+
 
 /**
  * POST /register
@@ -199,10 +292,15 @@ app.post("/register", (req, res) => {
     password,
   };
   users[user.id] = user;
-  console.log(users);
-  res.cookie("user_id", users[user.id]);
-  res.redirect("/urls");
+  //console.log(users);
+  res.redirect("/");
 });
+
+
+
+
+
+
 
 
 /**
@@ -212,25 +310,11 @@ app.post("/register", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/register", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"]};
+
   res.render("register.ejs", templateVars);
 });
-
-
-//---------------------------------------
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b><body></html>\n");
-});
-//------------------------------------------------
-
+/**--------------------------------------------------------------------------------------------------- */
 /**
  * Start the server.
  * @param {number} PORT - The port number to listen on.
@@ -238,6 +322,9 @@ app.get("/hello", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+/*---------------------------------------------------------------------------------------------------------------*/
+
+
 
 /**
  * Generate a random string.
@@ -269,3 +356,42 @@ const getUserByEmail = function(email) {
   }
   return null;
 };
+
+
+/**
+ * Takes in a cookie object and compares it to the users database to see if the password and email are the same.
+ * @param {Object} cookie 
+ * @returns {Boolean}
+ */
+const checkLogin = function(cookie){
+  if(!cookie){
+    return false;
+  }
+  const cookieEmail = cookie.email;
+  const cookiePass = cookie.password;
+  
+  for(let user in users){
+    let {email, password} = users[user];
+    if(email === cookieEmail && password === cookiePass){
+      accessCheck =  true;
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+/**
+ * Return a boolean depending on whether the id of a url exists in the database
+ * @param {string} urlId - a url id to search for
+ * @returns {boolean}
+ */
+const checkForUrlId = function(urlId){
+  for(let url in urlDatabase){
+    if(url === urlId){
+      return true;
+    }
+  }
+  return false;
+}
