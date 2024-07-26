@@ -32,11 +32,11 @@
         <tbody>
           <% for (let id in urls) { %>
             <tr>
-              <td><a class= "nav-item nav-link active" href = "<%= urls[id] %>" target = "_blank"> 
+              <td><a class= "nav-item nav-link active" href = "<%= urls[id].longURL %>" target = "_blank"> 
                 <%= id %> </a>
               </td>
               <td><a class = "nav-item nav-link disabled" href = "<%= urls[id] %>">
-                <%= urls[id] %></a>
+                <%= urls[id].longURL %></a>
               </td>
               <td>
                 <form method = "GET" action = "/urls/<%= id %>"><button class = "btn btn-outline-info">Edit</button></form>
