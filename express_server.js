@@ -5,7 +5,8 @@
 
 const bcrypt = require("bcryptjs");
 const express = require('express');
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 
 const app = express();
 const PORT = 8081; //default port 8080
@@ -13,7 +14,11 @@ const PORT = 8081; //default port 8080
 app.set("view engine", "ejs"); //set ejs as view engine.
 app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
 //                     into string we can read and add it to the req(request) object under key body.
-app.use(cookieParser());
+//app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['Continuius', 'continiusm', 'whos"t']
+}));
 
 
 /**Global variables */
@@ -72,12 +77,13 @@ app.get("/", (req, res) => {
  */
 app.get("/urls", (req, res) => {
 
-  const cookie = req.cookies['user_id'];
+  const cookie = req.session.user_id;
   if (!checkLogin(cookie)) {
     //res.status(403).send(`<h3> Cannot access this page without logging in.</h3>`)
     return res.redirect(`/login`);
   }
-  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
+  const urls = urlsForUser(cookie.id)
+  const templateVars = { urls, user: req.session.user_id };
   res.render("urls_index", templateVars);
 });
 
@@ -97,11 +103,11 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
 
   //const cookie = templateVars.user;
-  const userCookie = req.cookies['user_id']
+  const userCookie = req.session.user_id
   if (!checkLogin(userCookie)) {
     return res.redirect(`/login`);
   }
-  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
+  const templateVars = { urls: urlDatabase, user: req.session.user_id};
   return res.render("urls_new", templateVars);
 
 });
@@ -118,7 +124,7 @@ app.get("/urls/new", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.post("/urls", (req, res) => {
-  const userCookie = req.cookies['user_id']
+  const userCookie = req.session.user_id;
   if (!checkLogin(userCookie)) {//Check tht the user is logged in
     return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
   }
@@ -143,7 +149,7 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a delete button form
   let found = false;
   const {id}= req.params;
-  const userCookie = req.cookies['user_id']
+  const userCookie = req.session.user_id;
   if (!checkLogin(userCookie)) {//Check tht the user is logged in
     return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
   }
@@ -193,8 +199,9 @@ app.post("/login", (req, res) => {
   }
 
   if (foundUser) {
-    //set cpoockie
-    res.cookie('user_id', foundUser)
+    //set coockie
+    //res.cookie('user_id', foundUser)//cookie parser [x]
+    req.session.user_id = foundUser;
     return res.redirect('/urls')
   }
 
@@ -212,7 +219,7 @@ app.post("/login", (req, res) => {
  * @param {object} res
  */
 app.get("/login", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: req.cookies["user_id"] };
+  const templateVars = { urls: urlDatabase, user: req.session.user_id };
   res.render("login", templateVars);
 });
 
@@ -229,7 +236,8 @@ app.get("/login", (req, res) => {
    *
    */
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");//clear the cookies when logged out
+  //res.clearCookie("user_id");//clear the cookies when logged out
+  req.session = null;
   res.redirect(`/login`);
 });
 
@@ -269,7 +277,7 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  */
 app.post("/urls/:id", (req, res) => {//handles Edit of the long url
   const { id } = req.params;//the url id request
-  const userCookie = req.cookies['user_id']
+  const userCookie = req.session.user_id
   let found = false;
 
   if (!checkLogin(userCookie)) {//Check that the user is logged in
@@ -313,7 +321,7 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
  * @param {Object} res - The response object.
  */
 app.get(`/urls/:id`, (req, res) => {
-  const cookie = req.cookies['user_id'];
+  const cookie = req.session.user_id;
   let found = false;
 
   if (!checkLogin(cookie)) {
@@ -335,7 +343,7 @@ app.get(`/urls/:id`, (req, res) => {
   }
 
   const longURL = urlDatabase[id].longURL || ' ';
-  const templateVars = { id, longURL, user: req.cookies["user_id"] };
+  const templateVars = { id, longURL, user: req.session["user_id"] };
 
 
   return res.render(`urls_show`, templateVars);
@@ -393,7 +401,7 @@ app.post("/register", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/register", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.cookies["user_id"] };
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.session["user_id"] };
 
   res.render("register.ejs", templateVars);
 });
