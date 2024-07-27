@@ -5,14 +5,16 @@
 
 const bcrypt = require("bcryptjs");
 const express = require('express');
-const { 
+const {
   generateRandomString,
   generateRandomID,
   getUserByEmail,
   checkLogin,
   checkForUrlId,
-  urlsForUser, } = require('./helpers');
+  urlsForUser,
+} = require('./helpers');
 const cookieSession = require('cookie-session');
+const methodOverride = require('method-override');
 
 const app = express();
 const PORT = 8081; //default port 8080
@@ -20,6 +22,7 @@ const PORT = 8081; //default port 8080
 app.set("view engine", "ejs"); //set ejs as view engine.
 app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
 //                     into string we can read and add it to the req(request) object under key body.
+app.use(methodOverride('_method'));
 app.use(cookieSession({
   name: 'session',
   keys: ['Key1', 'Key2', 'Key3']
@@ -128,7 +131,7 @@ app.get("/urls/new", (req, res) => {
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.post("/urls", (req, res) => {
+app.put("/urls", (req, res) => {
   const userCookie = req.session.user_id;
   if (!checkLogin(userCookie, users)) {//Check tht the user is logged in
     return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
@@ -151,7 +154,7 @@ app.post("/urls", (req, res) => {
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a delete button form
+app.delete("/urls/:id/delete", (req, res) => {//post for delete attatch it to a delete button form
   let found = false;
   const { id } = req.params;
   const userCookie = req.session.user_id;
@@ -161,11 +164,11 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 
   const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
 
- 
-    if (userUrls[id]) {
-      found = true;
-    }
-  
+
+  if (userUrls[id]) {
+    found = true;
+  }
+
 
   if (!found) {
     return res.send(`<h3>There are no url with this id for this user</h3>`)
@@ -279,7 +282,7 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.post("/urls/:id", (req, res) => {//handles Edit of the long url
+app.put("/urls/:id", (req, res) => {//handles Edit of the long url
   const { id } = req.params;//the url id request
   const userCookie = req.session.user_id
   let found = false;
@@ -294,11 +297,11 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
 
   const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
 
-  
-    if (userUrls[id]) {
-      found = true;
-    }
-  
+
+  if (userUrls[id]) {
+    found = true;
+  }
+
 
   if (!found) {
     return res.send(`<h3>There are no url with this id for this user</h3>`)
@@ -335,11 +338,11 @@ app.get(`/urls/:id`, (req, res) => {
   const urlList = urlsForUser(cookie.id, urlDatabase);
   const id = req.params.id;
 
-  
-    if (urlList[id]) {
-      found = true;
-    }
-  
+
+  if (urlList[id]) {
+    found = true;
+  }
+
   if (!found) {
     return res.status(403).send("The URL does not exist for the user.");
   }
@@ -363,18 +366,18 @@ app.get(`/urls/:id`, (req, res) => {
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.post("/register", (req, res) => {
+app.put("/register", (req, res) => {
 
   const { email, password } = req.body;
 
   if (!email || !password) {
 
     return res.status(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
-    
+
   }
   if (getUserByEmail(email, users)) {
     return res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
-    
+
   }
   const hashedPassword = bcrypt.hashSync(password, 10);//hash the password
   const user = {
