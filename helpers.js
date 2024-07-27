@@ -37,7 +37,6 @@ const getUserByEmail = function (email, database) {
       return (database[u]);
     }
   }
-  return null;
 };
 
 
