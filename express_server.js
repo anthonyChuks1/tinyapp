@@ -11,7 +11,7 @@ const {
   getUserByEmail,
   checkLogin,
   checkForUrlId,
-  urlsForUser, } = require('./helpers')
+  urlsForUser, } = require('./helpers');
 //const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 
@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
 //app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
-  keys: ['Continuius', 'continiusm', 'whos"t']
+  keys: ['Key1', 'Key2', 'Key3']
 }));
 
 
@@ -209,7 +209,7 @@ app.post("/login", (req, res) => {
     //set coockie
     //res.cookie('user_id', foundUser)//cookie parser [x]
     req.session.user_id = foundUser;
-    return res.redirect('/urls')
+    return res.redirect('/urls');
   }
 
 });
@@ -332,7 +332,7 @@ app.get(`/urls/:id`, (req, res) => {
   let found = false;
 
   if (!checkLogin(cookie, users)) {
-    res.status(403).send(`<h3>Login to access this route.</h3>`)
+    //res.status(403).send(`<h3>Login to access this route.</h3>`)
     return res.redirect(`/login`);
   }
 
@@ -346,7 +346,7 @@ app.get(`/urls/:id`, (req, res) => {
     }
   }
   if (!found) {
-    return res.status(403).send("The URL does nt exist for the user.");
+    return res.status(403).send("The URL does not exist for the user.");
   }
 
   const longURL = urlDatabase[id].longURL || ' ';
@@ -374,12 +374,12 @@ app.post("/register", (req, res) => {
 
   if (!email || !password) {
 
-    res.status(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
-    return;
+    return res.status(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
+    
   }
   if (getUserByEmail(email, users)) {
-    res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
-    return;
+    return res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
+    
   }
   const hashedPassword = bcrypt.hashSync(password, 10);//hash the password
   const user = {
@@ -391,7 +391,7 @@ app.post("/register", (req, res) => {
   users[user.id] = user;
   //res.send(users);
   //console.log(users);
-  res.redirect("/");
+  return res.redirect("/");
 })
 
 
@@ -410,7 +410,7 @@ app.post("/register", (req, res) => {
 app.get("/register", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.session["user_id"] };
 
-  res.render("register.ejs", templateVars);
+  return res.render("register.ejs", templateVars);
 });
 /**---------------SERVER\\------------------------------------------------------------------------------------ */
 /**
