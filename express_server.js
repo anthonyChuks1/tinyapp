@@ -12,7 +12,6 @@ const {
   checkLogin,
   checkForUrlId,
   urlsForUser, } = require('./helpers');
-//const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 
 const app = express();
@@ -21,7 +20,6 @@ const PORT = 8081; //default port 8080
 app.set("view engine", "ejs"); //set ejs as view engine.
 app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
 //                     into string we can read and add it to the req(request) object under key body.
-//app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['Key1', 'Key2', 'Key3']
@@ -163,12 +161,11 @@ app.post("/urls/:id/delete", (req, res) => {//post for delete attatch it to a de
 
   const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
 
-  for (let url in userUrls) {
-    if (url === id) {
+ 
+    if (userUrls[id]) {
       found = true;
-      break;
     }
-  }
+  
 
   if (!found) {
     return res.send(`<h3>There are no url with this id for this user</h3>`)
@@ -297,12 +294,11 @@ app.post("/urls/:id", (req, res) => {//handles Edit of the long url
 
   const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
 
-  for (let url in userUrls) {
-    if (url === id) {
+  
+    if (userUrls[id]) {
       found = true;
-      break;
     }
-  }
+  
 
   if (!found) {
     return res.send(`<h3>There are no url with this id for this user</h3>`)
@@ -339,12 +335,11 @@ app.get(`/urls/:id`, (req, res) => {
   const urlList = urlsForUser(cookie.id, urlDatabase);
   const id = req.params.id;
 
-  for (let url in urlList) {
-    if (url === id) {
+  
+    if (urlList[id]) {
       found = true;
-      break;
     }
-  }
+  
   if (!found) {
     return res.status(403).send("The URL does not exist for the user.");
   }
@@ -389,9 +384,8 @@ app.post("/register", (req, res) => {
   };
 
   users[user.id] = user;
-  //res.send(users);
-  //console.log(users);
-  return res.redirect("/");
+  req.session.user_id = user;
+  return res.redirect("/urls");
 })
 
 
