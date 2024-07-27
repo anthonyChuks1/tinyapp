@@ -1,6 +1,6 @@
 
 /**
- * 
+ *
  * This file contains all helper functions for the tinyapp web application
  */
 
@@ -13,7 +13,7 @@
  * Generate a random string.
  * @returns {string} - The generated random string.
  */
-const generateRandomString = function () {
+const generateRandomString = function() {
   return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 4 to 10
 };
@@ -21,7 +21,7 @@ const generateRandomString = function () {
  * Generate a random string.
  * @returns {string} - The generated random string.
  */
-const generateRandomID = function () {
+const generateRandomID = function() {
   return Math.random().toString(36).substring(3, 7);//return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 3 to 7
 };
@@ -31,7 +31,7 @@ const generateRandomID = function () {
  * @param {string} email -  a string with the email format
  * @returns {object} - the user object
  */
-const getUserByEmail = function (email, database) {
+const getUserByEmail = function(email, database) {
   for (let u in database) {
     if (email === database[u].email) {
       return (database[u]);
@@ -42,10 +42,10 @@ const getUserByEmail = function (email, database) {
 
 /**
  * Takes in a cookie object and compares it to the users database to see if the password and email are the same.
- * @param {Object} cookie 
+ * @param {Object} cookie
  * @returns {Boolean}
  */
-const checkLogin = function (cookie, users) {
+const checkLogin = function(cookie, users) {
   if (!cookie) {
     return false;
   }
@@ -59,7 +59,7 @@ const checkLogin = function (cookie, users) {
     }
   }
   return false;
-}
+};
 
 
 
@@ -68,21 +68,21 @@ const checkLogin = function (cookie, users) {
  * @param {string} urlId - a url id to search for
  * @returns {boolean}
  */
-const checkForUrlId = function (urlId, urlDatabase) {
+const checkForUrlId = function(urlId, urlDatabase) {
 
   if (urlDatabase[urlId]) {
     return true;
   }
 
   return false;
-}
+};
 
 /**
  * Returns the URLs of the current user the id is the id of the current user.
  * @param {string} id - the user id connected to the url.
  * @returns {object} object of urls
  */
-const urlsForUser = function (id, urlDatabase) {
+const urlsForUser = function(id, urlDatabase) {
   const getURLs = {};
   for (let urlId in urlDatabase) {
     let { userID } = urlDatabase[urlId];
@@ -91,7 +91,7 @@ const urlsForUser = function (id, urlDatabase) {
     }
   }
   return getURLs;
-}
+};
 
 
 /**Exports here  */

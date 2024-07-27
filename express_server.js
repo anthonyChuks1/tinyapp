@@ -74,7 +74,7 @@ app.use(express.urlencoded({ extended: true }));//converts the request body from
  */
 app.get("/", (req, res) => {
   return res.redirect(`/login`);
-})
+});
 
 
 /**
@@ -90,7 +90,7 @@ app.get("/urls", (req, res) => {
     //res.status(403).send(`<h3> Cannot access this page without logging in.</h3>`)
     return res.redirect(`/login`);
   }
-  const urls = urlsForUser(cookie.id, urlDatabase)
+  const urls = urlsForUser(cookie.id, urlDatabase);
   const templateVars = { urls, user: req.session.user_id };
   res.render("urls_index", templateVars);
 });
@@ -111,7 +111,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
 
   //const cookie = templateVars.user;
-  const userCookie = req.session.user_id
+  const userCookie = req.session.user_id;
   if (!checkLogin(userCookie, users)) {
     return res.redirect(`/login`);
   }
@@ -171,7 +171,7 @@ app.delete("/urls/:id/delete", (req, res) => {//post for delete attatch it to a 
 
 
   if (!found) {
-    return res.send(`<h3>There are no url with this id for this user</h3>`)
+    return res.send(`<h3>There are no url with this id for this user</h3>`);
   }
 
   const urlShort = req.params.id;
@@ -263,7 +263,7 @@ app.post("/logout", (req, res) => {
 app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in (anyone can visit this short url)
   const { id } = req.params;
   if (!checkForUrlId(id, urlDatabase)) {//check for the id in the database
-    return res.send(`<h3>The id does not exist in the database</h3>`)
+    return res.send(`<h3>The id does not exist in the database</h3>`);
   }
 
   const longURL = urlDatabase[id];
@@ -284,7 +284,7 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  */
 app.put("/urls/:id", (req, res) => {//handles Edit of the long url
   const { id } = req.params;//the url id request
-  const userCookie = req.session.user_id
+  const userCookie = req.session.user_id;
   let found = false;
 
   if (!checkLogin(userCookie, users)) {//Check that the user is logged in
@@ -292,7 +292,7 @@ app.put("/urls/:id", (req, res) => {//handles Edit of the long url
   }
 
   if (!checkForUrlId(id, urlDatabase)) {//check for the id in the database
-    return res.status(403).send(`<h3>The id does not exist in the database</h3>`)
+    return res.status(403).send(`<h3>The id does not exist in the database</h3>`);
   }
 
   const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
@@ -304,7 +304,7 @@ app.put("/urls/:id", (req, res) => {//handles Edit of the long url
 
 
   if (!found) {
-    return res.send(`<h3>There are no url with this id for this user</h3>`)
+    return res.send(`<h3>There are no url with this id for this user</h3>`);
   }
 
   const { longURL } = req.body;//to get the data from the form it will put the data in the body
@@ -389,7 +389,7 @@ app.put("/register", (req, res) => {
   users[user.id] = user;
   req.session.user_id = user;
   return res.redirect("/urls");
-})
+});
 
 
 
