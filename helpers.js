@@ -69,11 +69,11 @@ const checkLogin = function (cookie, users) {
  * @returns {boolean}
  */
 const checkForUrlId = function (urlId, urlDatabase) {
-  for (let url in urlDatabase) {
-    if (url === urlId) {
-      return true;
-    }
+
+  if (urlDatabase[urlId]) {
+    return true;
   }
+
   return false;
 }
 
@@ -102,4 +102,4 @@ module.exports = {
   checkLogin,
   checkForUrlId,
   urlsForUser,
-}
+};
