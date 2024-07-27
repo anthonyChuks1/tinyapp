@@ -38,11 +38,11 @@ To go to the `login` page enter
 
 ---
 
-![Image1](./Loginpage.png)
-![Image2](./Terminal.png)
-![Image3](./cookies.png)
-![Image4](./Editpage.png)
-![Image5](./frontpage.png)
+![Image1](./images/Loginpage.png)
+![Image2](./images/Terminal.png)
+![Image3](./images/cookies.png)
+![Image4](./images/Editpage.png)
+![Image5](./images/frontpage.png)
 
 ---
 
