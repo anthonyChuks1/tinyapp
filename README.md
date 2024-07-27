@@ -15,7 +15,7 @@ else use ```node express_server.js```
 Port number can be changed on ```const PORT = 8081``` in line 10 of the ```express_server.js``` file if `port 8081` is occupied.
 ---
 To go to the `login` page enter
-```localhost:<PORT NUMBER>/login```</br><br>
+```localhost:<PORT NUMBER>/login``` or ```localhost:<PORT NUMBER>/```</br><br>
 To `register` a new account enter<br>
 ```localhost:<PORT NUMBER>/register```
 </br><br>
