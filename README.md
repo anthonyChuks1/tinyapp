@@ -1,28 +1,50 @@
-# Tiny App 
----
-### by Anthony Chuks
----
-This is a simple web applicaton that links other websites to an id< key >.
+# Tiny App Project
 
 ---
-On your system where the folder `./tinyapp` is located install dependencies with ```npm init && npm i ejs && npm i express```.</br>
 
 
-if `nodemon` is installed start the server with ```npm start```
-else use ```node express_server.js```
+
+---
+
+TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly).
+
+---
+
+## Dependencies
+
+- Node.js
+- Express
+- EJS
+- bcryptjs
+- cookie-session
+
+---
+
+## Getting Started
+
+- Install all dependencies (using the `npm install` command).
+- Run the development web server using the `node express_server.js` command.
 
 Port number can be changed on ```const PORT = 8081``` in line 10 of the ```express_server.js``` file if `port 8081` is occupied.
+
 ---
+
 To go to the `login` page enter
 ```localhost:<PORT NUMBER>/login``` or ```localhost:<PORT NUMBER>/```</br><br>
-To `register` a new account enter<br>
-```localhost:<PORT NUMBER>/register```
-</br><br>
-in your browser when the server is on.
----
-![Image1](./tinyapp.png)
 
-![Image2](./tinyapp2.png)
+---
+
+## Final Product
+
+---
+
+![Image1](./Loginpage.png)
+![Image2](./Terminal.png)
+![Image3](./cookies.png)
+![Image4](./Editpage.png)
+![Image5](./frontpage.png)
+
+---
 
 
 ---
