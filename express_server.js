@@ -4,7 +4,7 @@
  */
 
 const bcrypt = require("bcryptjs");
-const express = require('express');
+const express = require("express");
 const {
   generateRandomString,
   generateRandomID,
@@ -12,61 +12,28 @@ const {
   checkLogin,
   checkForUrlId,
   urlsForUser,
-} = require('./helpers');
-const cookieSession = require('cookie-session');
-const methodOverride = require('method-override');
+  loginRoute,
+} = require("./helpers");
+const cookieSession = require("cookie-session");
+const methodOverride = require("method-override");
+const { urlDatabase, users } = require("./helper-variables");
 
 const app = express();
 const PORT = 8081; //default port 8080
 
 app.set("view engine", "ejs"); //set ejs as view engine.
-app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
+app.use(express.urlencoded({ extended: true })); //converts the request body from a buffer
 //                     into string we can read and add it to the req(request) object under key body.
-app.use(methodOverride('_method'));
-app.use(cookieSession({
-  name: 'session',
-  keys: ['Key1', 'Key2', 'Key3']
-}));
+app.use(methodOverride("_method"));
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["Key1", "Key2", "Key3"],
+  })
+);
 
-
-/**Global variables */
-//urlDatabase database
-const urlDatabase = {
-  b2xVn2: {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "a1"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "bbbbb"
-  },
-  b6UTxQ: {
-    longURL: "https://www.tsn.ca",
-    userID: "aJ48lW",
-  },
-  i3BoGr: {
-    longURL: "https://www.google.ca",
-    userID: "aJ48lW",
-  },
-};
-//users database
-const users = {
-  b2: {
-    id: "b2",
-    email: "b@b.com",
-    password: bcrypt.hashSync('bbb', 10),
-  },
-  a1: {
-    id: "a1",
-    email: "a@a.com",
-    password: bcrypt.hashSync('aaa', 10),
-  },
-};
-/**End of global variables */
-app.use(express.urlencoded({ extended: true }));//converts the request body from a buffer
+app.use(express.urlencoded({ extended: true })); //converts the request body from a buffer
 //                     into string we can read and add it to the req(request) object under key body. very important
-
-
 
 /**
  * GET /
@@ -76,7 +43,6 @@ app.get("/", (req, res) => {
   return res.redirect(`/login`);
 });
 
-
 /**
  * GET /urls
  * Route for displaying all URLs in the database.
@@ -84,23 +50,16 @@ app.get("/", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/urls", (req, res) => {
-
   const cookie = req.session.user_id;
   if (!checkLogin(cookie, users)) {
-    //res.status(403).send(`<h3> Cannot access this page without logging in.</h3>`)
-    return res.redirect(`/login`);
+    return res.status(403)
+      .send(`<h3> Cannot access this page without logging in.</h3>
+      <br> <a href = ${loginRoute(PORT, "/login")}> Login <a>`);
   }
   const urls = urlsForUser(cookie.id, urlDatabase);
   const templateVars = { urls, user: req.session.user_id };
   res.render("urls_index", templateVars);
 });
-
-
-
-
-
-
-
 
 /**
  * GET /urls/new
@@ -109,7 +68,6 @@ app.get("/urls", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/urls/new", (req, res) => {
-
   //const cookie = templateVars.user;
   const userCookie = req.session.user_id;
   if (!checkLogin(userCookie, users)) {
@@ -117,13 +75,7 @@ app.get("/urls/new", (req, res) => {
   }
   const templateVars = { urls: urlDatabase, user: req.session.user_id };
   return res.render("urls_new", templateVars);
-
 });
-
-
-
-
-
 
 /**
  * POST /urls
@@ -133,20 +85,18 @@ app.get("/urls/new", (req, res) => {
  */
 app.put("/urls", (req, res) => {
   const userCookie = req.session.user_id;
-  if (!checkLogin(userCookie, users)) {//Check tht the user is logged in
-    return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
+  if (!checkLogin(userCookie, users)) {
+    //Check tht the user is logged in
+    return res.status(403)
+      .send(`<h3> Cannot access this route without login. \n Login before accessing this route</h3>
+      <br> <a href = ${loginRoute(PORT, "/login")}> Login <a>`);
   }
-  const { longURL } = req.body;//it will put new data in the body
+  const { longURL } = req.body; //it will put new data in the body
   const shortURL = generateRandomString();
   const userID = userCookie.id;
   urlDatabase[shortURL] = { longURL, userID }; //Add them to the data base
-  return res.redirect(`/urls/${shortURL}`);//Lets make sure that it actually worked hmm?
+  return res.redirect(`/urls/${shortURL}`); //Lets make sure that it actually worked hmm?
 });
-
-
-
-
-
 
 /**
  * POST /urls/:id/delete
@@ -154,34 +104,33 @@ app.put("/urls", (req, res) => {
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.delete("/urls/:id/delete", (req, res) => {//post for delete attatch it to a delete button form
+app.delete("/urls/:id/delete", (req, res) => {
+  //post for delete attatch it to a delete button form
   let found = false;
   const { id } = req.params;
   const userCookie = req.session.user_id;
-  if (!checkLogin(userCookie, users)) {//Check tht the user is logged in
-    return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
+  if (!checkLogin(userCookie, users)) {
+    //Check tht the user is logged in
+    return res.status(403)
+      .send(`<h3> Cannot access this route without login. Login before accessing this route</h3>
+      <br> <a href = ${loginRoute(PORT, "/login")}> Login <a>`);
   }
 
-  const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
-
+  const userUrls = urlsForUser(userCookie.id, urlDatabase); //put the result into userUrls
 
   if (userUrls[id]) {
     found = true;
   }
 
-
   if (!found) {
-    return res.send(`<h3>There are no url with this id for this user</h3>`);
+    return res.send(`<h3>There are no url with this id for this user</h3> 
+      <br> <a href = ${loginRoute(PORT, "/urls")}> Urls Page <a>`);
   }
 
   const urlShort = req.params.id;
   delete urlDatabase[urlShort];
-  res.redirect("/urls");//redirect to homepage
+  res.redirect("/urls"); //redirect to homepage
 });
-
-
-
-
 
 /**
  * POST /login
@@ -194,31 +143,29 @@ app.delete("/urls/:id/delete", (req, res) => {//post for delete attatch it to a 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   let foundUser = null;
-
-
-  for (let user in users) {//loop through database to find the email
-    if (email === users[user].email && bcrypt.compareSync(password, users[user].password)) {//did you find the email
+  for (let user in users) {
+    //loop through database to find the email
+    if (
+      email === users[user].email &&
+      bcrypt.compareSync(password, users[user].password)
+    ) {
+      //did you find the email
       foundUser = users[user];
     }
   }
   if (!foundUser) {
-    res.status(403).send("<h1>Login Failed - Wrong Login information</h1>");
+    res.status(403).send(`<h1>Login Failed - Wrong Login information</h1>
+      <br> <a href = ${loginRoute(PORT, "/login")}> Login <a>
+      <br> <a href = ${loginRoute(PORT, "/register")}> Register <a>`);
   }
 
   if (foundUser) {
     //set coockie
     //res.cookie('user_id', foundUser)//cookie parser [x]
     req.session.user_id = foundUser;
-    return res.redirect('/urls');
+    return res.redirect("/urls");
   }
-
 });
-
-
-
-
-
-
 
 /**
  *  a GET endpoint for /login page
@@ -230,29 +177,18 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
-
-
-
-
-
 /**
-   * POST /logout
-   * Deletes the user information from the cookie cache
-   * @param {Object} req - The request object.
-   * @param {Object} res - The response objeect.
-   *
-   */
+ * POST /logout
+ * Deletes the user information from the cookie cache
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response objeect.
+ *
+ */
 app.post("/logout", (req, res) => {
   //res.clearCookie("user_id");//clear the cookies when logged out
   req.session = null;
   res.redirect(`/login`);
 });
-
-
-
-
-
-
 
 /**
  * GET /u/:id
@@ -260,21 +196,18 @@ app.post("/logout", (req, res) => {
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed in (anyone can visit this short url)
+app.get("/u/:id", (req, res) => {
+  //redirect to the website when the id is passed in (anyone can visit this short url)
   const { id } = req.params;
-  if (!checkForUrlId(id, urlDatabase)) {//check for the id in the database
-    return res.send(`<h3>The id does not exist in the database</h3>`);
+  if (!checkForUrlId(id, urlDatabase)) {
+    //check for the id in the database
+    return res.send(`<h3>The id does not exist in the database</h3>
+      <br> $<a href = ${loginRoute(PORT, "/urls")}> URL Page <a>`);
   }
 
-  const longURL = urlDatabase[id];
+  const longURL = urlDatabase[id].longURL;
   return res.redirect(`${longURL}`);
 });
-
-
-
-
-
-
 
 /**
  * POST /urls/:id
@@ -282,43 +215,43 @@ app.get("/u/:id", (req, res) => {//redirect to the website when the id is passed
  * @param {Object} req - The request object.
  * @param {Object} res - The response object.
  */
-app.put("/urls/:id", (req, res) => {//handles Edit of the long url
-  const { id } = req.params;//the url id request
+app.put("/urls/:id", (req, res) => {
+  //handles Edit of the long url
+  const { id } = req.params; //the url id request
   const userCookie = req.session.user_id;
   let found = false;
 
-  if (!checkLogin(userCookie, users)) {//Check that the user is logged in
-    return res.status(403).send('<h3> Cannot access this route without login. \n Login before accessing this route</h3>');
+  if (!checkLogin(userCookie, users)) {
+    //Check that the user is logged in
+    return res.status(403)
+      .send(`<h3> Cannot access this route without login.<br> 
+      Login  with <a href = ${loginRoute(PORT, "/login")}> Login <a> before accessing this page.</h3>`);
   }
 
-  if (!checkForUrlId(id, urlDatabase)) {//check for the id in the database
-    return res.status(403).send(`<h3>The id does not exist in the database</h3>`);
+  if (!checkForUrlId(id, urlDatabase)) {
+    //check for the id in the database
+    return res.status(403).send(`<h3>The id does not exist in the database <br>
+      Go back to main page <a href = ${loginRoute(PORT, "/urls")}> URLs Page<a> </h3>`);
   }
 
-  const userUrls = urlsForUser(userCookie.id, urlDatabase);//put the result into userUrls
-
+  const userUrls = urlsForUser(userCookie.id, urlDatabase); //put the result into userUrls
 
   if (userUrls[id]) {
     found = true;
   }
 
-
   if (!found) {
-    return res.send(`<h3>There are no url with this id for this user</h3>`);
+    return res.send(`<h3>There are no url with this id for this user <br>
+      Main page <a href = ${loginRoute(PORT, "/urls")}> URLs page <a> </h3>`);
   }
 
-  const { longURL } = req.body;//to get the data from the form it will put the data in the body
+  const { longURL } = req.body; //to get the data from the form it will put the data in the body
 
-  if (longURL !== 'http://') {
-    urlDatabase[id].longURL = longURL;//change the long url here
+  if (longURL !== "http://") {
+    urlDatabase[id].longURL = longURL; //change the long url here
   }
   return res.redirect(`/urls`);
 });
-
-
-
-
-
 
 /**
  * GET /urls/:id
@@ -331,34 +264,27 @@ app.get(`/urls/:id`, (req, res) => {
   let found = false;
 
   if (!checkLogin(cookie, users)) {
-    //res.status(403).send(`<h3>Login to access this route.</h3>`)
-    return res.redirect(`/login`);
+    return res.status(403).send(`<h3>Login to access this url <br> 
+      Click <a href = ${loginRoute(PORT, "/login")}> Login <a>  to go to loginpage .</h3>`);
   }
 
   const urlList = urlsForUser(cookie.id, urlDatabase);
   const id = req.params.id;
-
 
   if (urlList[id]) {
     found = true;
   }
 
   if (!found) {
-    return res.status(403).send("The URL does not exist for the user.");
+    return res.status(403).send(`The URL does not exist for the user. <br> 
+      <a href = ${loginRoute(PORT, "/urls")}> URLs page <a>`);
   }
 
-  const longURL = urlDatabase[id].longURL || ' ';
+  const longURL = urlDatabase[id].longURL || " ";
   const templateVars = { id, longURL, user: req.session["user_id"] };
-
 
   return res.render(`urls_show`, templateVars);
 });
-
-
-
-
-
-
 
 /**
  * POST /register
@@ -367,19 +293,17 @@ app.get(`/urls/:id`, (req, res) => {
  * @param {Object} res - The response object.
  */
 app.put("/register", (req, res) => {
-
   const { email, password } = req.body;
 
   if (!email || !password) {
-
-    return res.status(400).send('<p>Email or Password cannot be empty</p>');//Respond with status 400 if the email and password is empty
-
+    return res.status(400).send(`<h3>Email or Password cannot be empty</h3>
+      <br> <a href = ${loginRoute(PORT, "/register")}> Register <a>`); //Respond with status 400 if the email and password is empty
   }
   if (getUserByEmail(email, users)) {
-    return res.status(400).send('<p>Email is already in use.</p>');//respond with status 400 if email is already used
-
+    return res.status(400).send(`<h3>Email is already in use.</h3>
+       <br> <a href = ${loginRoute(PORT, "/register")}> Register with new email <a>`); //respond with status 400 if email is already used
   }
-  const hashedPassword = bcrypt.hashSync(password, 10);//hash the password
+  const hashedPassword = bcrypt.hashSync(password, 10); //hash the password
   const user = {
     id: generateRandomID(),
     email,
@@ -391,13 +315,6 @@ app.put("/register", (req, res) => {
   return res.redirect("/urls");
 });
 
-
-
-
-
-
-
-
 /**
  * GET /register
  * Route for the registration page.
@@ -405,7 +322,11 @@ app.put("/register", (req, res) => {
  * @param {Object} res - The response object.
  */
 app.get("/register", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id], user: req.session["user_id"] };
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id],
+    user: req.session["user_id"],
+  };
 
   return res.render("register.ejs", templateVars);
 });
@@ -415,6 +336,5 @@ app.get("/register", (req, res) => {
  * @param {number} PORT - The port number to listen on.
  */
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Tinyapp listening on port ${PORT}!`);
 });
-
