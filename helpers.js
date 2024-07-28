@@ -1,20 +1,24 @@
-
 /**
  *
  * This file contains all helper functions for the tinyapp web application
  */
 
 /*------------------HELPERS\\--------------------------------------------------------------------------------------------*/
-
-
-
+/**
+ * returns localhost url with the port number
+ * @param {number} PORT
+ * @returns {string}
+ */
+const loginRoute = function(PORT, route) {
+  return `http://localhost:${PORT}${route}`;
+};
 
 /**
  * Generate a random string.
  * @returns {string} - The generated random string.
  */
 const generateRandomString = function() {
-  return Math.random().toString(36).substring(4, 10);//return random number between 0 - 1 and convert from decimal to base 36 then get value
+  return Math.random().toString(36).substring(4, 10); //return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 4 to 10
 };
 /**
@@ -22,7 +26,7 @@ const generateRandomString = function() {
  * @returns {string} - The generated random string.
  */
 const generateRandomID = function() {
-  return Math.random().toString(36).substring(3, 7);//return random number between 0 - 1 and convert from decimal to base 36 then get value
+  return Math.random().toString(36).substring(3, 7); //return random number between 0 - 1 and convert from decimal to base 36 then get value
   //                                                    from index 3 to 7
 };
 
@@ -34,11 +38,10 @@ const generateRandomID = function() {
 const getUserByEmail = function(email, database) {
   for (let u in database) {
     if (email === database[u].email) {
-      return (database[u]);
+      return database[u];
     }
   }
 };
-
 
 /**
  * Takes in a cookie object and compares it to the users database to see if the password and email are the same.
@@ -61,15 +64,12 @@ const checkLogin = function(cookie, users) {
   return false;
 };
 
-
-
 /**
  * Return a boolean depending on whether the id of a url exists in the database
  * @param {string} urlId - a url id to search for
  * @returns {boolean}
  */
 const checkForUrlId = function(urlId, urlDatabase) {
-
   if (urlDatabase[urlId]) {
     return true;
   }
@@ -93,7 +93,6 @@ const urlsForUser = function(id, urlDatabase) {
   return getURLs;
 };
 
-
 /**Exports here  */
 module.exports = {
   generateRandomString,
@@ -102,4 +101,5 @@ module.exports = {
   checkLogin,
   checkForUrlId,
   urlsForUser,
+  loginRoute,
 };
